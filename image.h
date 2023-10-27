@@ -17,7 +17,7 @@ typedef double Matrix[3][3];
 
 uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm);
 //(Image* srcImage,Image* destImage,Matrix algorithm)
-void* convolute(Image* srcImage,Image* destImage,Matrix algorithm);
+void* convolute(void* arguments);
 int Usage();
 enum KernelTypes GetKernelType(char* type);
 

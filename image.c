@@ -14,14 +14,16 @@
 int thread_count;
 //Image srcImage,destImage,bwImage;
 
-/*
+
 //struct for the arguments of the convolute function
-struct args_struct {
-	Image* image_src;
-	Image* image_dest;
-	Matrix* algo;
-};
-*/
+typedef struct {
+	Image* srcImage;
+	Image* destImage;
+	Matrix algorithm;
+	int thread_count;
+	int thread_rank;
+}threadArgs;
+
 //An array of kernel matrices to be used for image convolution.  
 //The indexes of these match the enumeration from the header file. ie. algorithms[BLUR] returns the kernel corresponding to a box blur.
 Matrix algorithms[]={
@@ -69,8 +71,13 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
 //            algorithm: The kernel matrix to use for the convolution
 //Returns: Nothing
 //(Image* srcImage,Image* destImage,Matrix algorithm)
-void* convolute(Image* srcImage,Image* destImage,Matrix algorithm){
+void* convolute(void* arguments){
     int row,pix,bit,span;
+    threadArgs* args = (threadArgs*)arguments;
+    Image* srcImage = args->srcImage;
+    Image* destImage = args->destImage;
+    Matrix algorithm = args->algorithm;
+
     span=srcImage->bpp*srcImage->bpp;
     for (row=0;row<srcImage->height;row++){
         for (pix=0;pix<srcImage->width;pix++){
@@ -131,26 +138,32 @@ int main(int argc,char** argv){
     destImage.height=srcImage.height;
     destImage.width=srcImage.width;
     destImage.data=malloc(sizeof(uint8_t)*destImage.width*destImage.bpp*destImage.height);
-/*
-    // add args into args_struct
-    struct args_struct pic_args;
-    pic_args.image_src = &srcImage;
-    pic_args.image_dest = &destImage;
-    pic_args.algo = *algorithms;
-*/
+    
     // instantiate threads
     long thread;
     pthread_t* thread_handles;
     thread_count = strtol(argv[3],NULL,10);
     thread_handles = (pthread_t*)malloc(thread_count * sizeof(pthread_t));
+    threadArgs* args = malloc(thread_count * sizeof(threadArgs));
     
-    for (thread = 0; thread < thread_count; thread++)
-	    pthread_create(&thread_handles[thread],NULL,&Hello,(void*)thread);
+    for (thread = 0; thread < thread_count; thread++){
+	    args[thread].srcImage = &srcImage;
+            args[thread].destImage = &destImage;
+            //args[thread].algorithm = algorithms[type];
+	    for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++){
+		    args[thread].algorithm[i][j] = algorithms[type][i][j];
+		}
+	    }
+            args[thread].thread_count = thread_count;
+	    args[thread].thread_rank = thread;
+	    pthread_create(&thread_handles[thread],NULL, &convolute , &args[thread]);	   
+    }
     //printf("hello from parent thread\n");
     for (thread = 0; thread < thread_count; thread++)
 	    pthread_join(thread_handles[thread],NULL);
   
-    
+    free(args);
     //convolute(&srcImage,&destImage,algorithms[type]);
     stbi_write_png("output.png",destImage.width,destImage.height,destImage.bpp,destImage.data,destImage.bpp*destImage.width);
     stbi_image_free(srcImage.data);
