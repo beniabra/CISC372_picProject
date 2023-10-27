@@ -3,12 +3,15 @@
 #include <time.h>
 #include <string.h>
 #include "image.h"
+#include <omp.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+
+int thread_count;
 
 //An array of kernel matrices to be used for image convolution.  
 //The indexes of these match the enumeration from the header file. ie. algorithms[BLUR] returns the kernel corresponding to a box blur.
@@ -59,6 +62,7 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
 void convolute(Image* srcImage,Image* destImage,Matrix algorithm){
     int row,pix,bit,span;
     span=srcImage->bpp*srcImage->bpp;
+    #pragma omp parallel for num_threads(thread_count)
     for (row=0;row<srcImage->height;row++){
         for (pix=0;pix<srcImage->width;pix++){
             for (bit=0;bit<srcImage->bpp;bit++){
@@ -66,6 +70,14 @@ void convolute(Image* srcImage,Image* destImage,Matrix algorithm){
             }
         }
     }
+}
+
+// Dummy function to help debug
+void Hello(void) {
+	int my_rank = omp_get_thread_num();
+	int thread_count = omp_get_num_threads();
+
+	printf("hello from thread %d of %d\n", my_rank, thread_count);
 }
 
 //Usage: Prints usage information for the program
@@ -94,7 +106,7 @@ int main(int argc,char** argv){
     t1=time(NULL);
 
     stbi_set_flip_vertically_on_load(0); 
-    if (argc!=3) return Usage();
+    if (argc!=4) return Usage();
     char* fileName=argv[1];
     if (!strcmp(argv[1],"pic4.jpg")&&!strcmp(argv[2],"gauss")){
         printf("You have applied a gaussian filter to Gauss which has caused a tear in the time-space continum.\n");
@@ -111,7 +123,11 @@ int main(int argc,char** argv){
     destImage.height=srcImage.height;
     destImage.width=srcImage.width;
     destImage.data=malloc(sizeof(uint8_t)*destImage.width*destImage.bpp*destImage.height);
+
+    thread_count =strtol(argv[3], NULL, 10);
+# pragma omp parallel num_threads(thread_count)
     convolute(&srcImage,&destImage,algorithms[type]);
+
     stbi_write_png("output.png",destImage.width,destImage.height,destImage.bpp,destImage.data,destImage.bpp*destImage.width);
     stbi_image_free(srcImage.data);
     
