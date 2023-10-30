@@ -62,7 +62,7 @@ uint8_t getPixelValue(Image* srcImage,int x,int y,int bit,Matrix algorithm){
 void convolute(Image* srcImage,Image* destImage,Matrix algorithm){
     int row,pix,bit,span;
     span=srcImage->bpp*srcImage->bpp;
-    #pragma omp parallel for num_threads(thread_count) collapse(3)
+    #pragma omp parallel for num_threads(thread_count) private(pix,bit)
     for (row=0;row<srcImage->height;row++){
  //       printf("row=%d, thread=%d of %d\n", row, omp_get_thread_num(), thread_count);
 	for (pix=0;pix<srcImage->width;pix++){
