@@ -76,11 +76,25 @@ void* convolute(void* arguments){
     threadArgs* args = (threadArgs*)arguments;
     Image* srcImage = args->srcImage;
     Image* destImage = args->destImage;
-    Matrix algorithm = args->algorithm;
-
+    //Matrix algorithm = args->algorithm;
+    Matrix algorithm;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++){
+            algorithm[i][j] = args->algorithm[i][j];
+        }
+    }
+    int thread_count = args->thread_count;
+    int thread_rank = args->thread_rank;
     span=srcImage->bpp*srcImage->bpp;
-    for (row=0;row<srcImage->height;row++){
-        for (pix=0;pix<srcImage->width;pix++){
+    int start, stop, iter;
+    iter = srcImage->height / thread_count;
+    start = iter * thread_rank;
+    stop = start + iter;
+    if (thread_rank == thread_count - 1)
+	    stop = srcImage->height;
+ //   printf("thread %d is iterating from %d to %d\n", thread_rank, start, stop); 
+    for (row=start;row<stop;row++){
+	for (pix=0;pix<srcImage->width;pix++){
             for (bit=0;bit<srcImage->bpp;bit++){
                 destImage->data[Index(pix,row,srcImage->width,bit,srcImage->bpp)]=getPixelValue(srcImage,pix,row,bit,algorithm);
             }
