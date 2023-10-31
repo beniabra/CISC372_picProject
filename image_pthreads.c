@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <string.h>
-#include "image.h"
+#include "image_pthreads.h"
 #include <pthread.h>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -135,7 +135,7 @@ int main(int argc,char** argv){
     t1=time(NULL);
 
     stbi_set_flip_vertically_on_load(0); 
-    if (argc!=4) return Usage();
+    if (argc!=3) return Usage();
     char* fileName=argv[1];
     if (!strcmp(argv[1],"pic4.jpg")&&!strcmp(argv[2],"gauss")){
         printf("You have applied a gaussian filter to Gauss which has caused a tear in the time-space continum.\n");
@@ -156,7 +156,7 @@ int main(int argc,char** argv){
     // instantiate threads
     long thread;
     pthread_t* thread_handles;
-    thread_count = strtol(argv[3],NULL,10);
+    thread_count = 4;
     thread_handles = (pthread_t*)malloc(thread_count * sizeof(pthread_t));
     threadArgs* args = malloc(thread_count * sizeof(threadArgs));
     
