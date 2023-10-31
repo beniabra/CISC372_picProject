@@ -1,0 +1,10 @@
+Script started on Mon Oct 30 22:00:27 2023
+]0;beniabra@r1n09.darwin:~/CISC372/pa3/CISC372_picProject[?1034h[beniabra@r1n09 CISC372_picProject]$ exitsrun ./image_openmp pic1.jpg edgeexport OMP_NUM_THREADS=$SLURM_CPUS_PER_TTASK[Aiabra@r1n09 CISC372_picProject]$ [6Psrun ./image_openmp pic1.jpg edge
+[K[A[beniabra@r1n09 CISC372_picProject]$ srun ./image_openmp pic1.jpg edge
+Took 7 seconds
+]0;beniabra@r1n09.darwin:~/CISC372/pa3/CISC372_picProject[beniabra@r1n09 CISC372_picProject]$ srun ./image_openmp pic1.jpg edge[1P[1P[1P[1P[1P[1P[1@p[1@t[1@h[1@r[1@e[1@a[1@d[1@s
+Took 6 seconds
+]0;beniabra@r1n09.darwin:~/CISC372/pa3/CISC372_picProject[beniabra@r1n09 CISC372_picProject]$ exit
+exit
+
+Script done on Mon Oct 30 22:01:02 2023
